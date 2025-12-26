@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Diya 🤍 Friendship – Ultimate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Segoe UI,sans-serif;
+  background:radial-gradient(circle at top,#1a2a6c,#000);
+  height:100vh;overflow:hidden;color:#fff
+}
+.book{
+  width:330px;height:470px;margin:auto;
+  background:rgba(255,255,255,.08);backdrop-filter:blur(10px);
+  border-radius:20px;box-shadow:0 0 40px rgba(0,0,0,.8);
+  padding:22px;position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);text-align:center
+}
+.page{display:none;animation:flip .6s}
+.page.active{display:block}
+@keyframes flip{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+h2{margin:18px 0 10px}
+p{font-size:15px;line-height:1.6}
+.controls{position:absolute;bottom:12px;left:0;width:100%}
+button{
+  background:#ff4d8d;border:none;color:#fff;
+  padding:8px 14px;border-radius:18px;margin:0 6px;cursor:pointer
+}
+
+/* MUSIC CORNER */
+.music{position:fixed;top:10px;right:10px;width:160px;z-index:5}
+
+/* EDIT PANEL */
+.panel{
+  position:fixed;left:10px;top:10px;width:210px;z-index:6;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(8px);
+  border-radius:14px;padding:10px;font-size:12px
+}
+.panel h4{margin:6px 0}
+.panel textarea,.panel input{
+  width:100%;border-radius:8px;border:none;padding:6px;margin:4px 0
+}
+.panel small{opacity:.8}
+
+/* FLOWERS */
+.flower{position:fixed;top:-20px;font-size:20px;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+
+/* FIREWORKS */
+canvas{position:fixed;inset:0;z-index:-1}
+</style>
+</head>
+
+<body>
+<canvas id="fx"></canvas>
+
+<!-- MUSIC CORNER (Spotify default) -->
+<div class="music" id="musicBox">
+  <iframe style="border-radius:12px"
+    src="https://open.spotify.com/embed/track/4sgYmcu4FKb1ZC6qBlxMiw"
+    width="100%" height="80" frameborder="0"
+    allow="autoplay; encrypted-media"></iframe>
+</div>
+
+<!-- EDIT PANEL -->
+<div class="panel">
+  <h4>Edit Text ✍️</h4>
+  <textarea id="titleEdit" placeholder="Page title"></textarea>
+  <textarea id="textEdit" placeholder="Page content"></textarea>
+  <button onclick="applyEdit()">Apply</button>
+  <button onclick="addPage()">Add Page</button>
+  <button onclick="delPage()">Delete Page</button>
+  <hr>
+  <h4>Music 🎵</h4>
+  <input id="spotify" placeholder="Spotify embed URL">
+  <input id="youtube" placeholder="YouTube link">
+  <input id="mp3" placeholder="MP3 URL">
+  <button onclick="setSpotify()">Use Spotify</button>
+  <button onclick="setYT()">Use YouTube</button>
+  <button onclick="setMP3()">Use MP3</button>
+  <small>Tip: First tap required for autoplay (browser rule)</small>
+</div>
+
+<!-- BOOK -->
+<div class="book">
+  <div class="page active">
+    <h2>Hey Diya 🤍</h2>
+    <p>Hum bachpan se saath nahi the,<br>par aage ki kahani saath likhenge.</p>
+  </div>
+  <div class="page">
+    <h2>Dosti ✨</h2>
+    <p>Sukh me saath rahu ya na rahu,<br>par dukh me hamesha tere saath rahunga.</p>
+  </div>
+  <div class="page">
+    <h2>Always 🌸</h2>
+    <p>Ladka–ladki ki dosti bhi khoobsurat hoti hai,<br>jab jazbaat saaf ho.</p>
+  </div>
+  <div class="controls">
+    <button onclick="prev()">⬅</button>
+    <button onclick="next()">➡</button>
+  </div>
+</div>
+
+<!-- MP3 AUDIO -->
+<audio id="audio" loop></audio>
+
+<script>
+/* PAGES */
+let pages=[...document.querySelectorAll('.page')], i=0;
+const show=()=>{pages.forEach(p=>p.classList.remove('active'));pages[i]?.classList.add('active')}
+const next=()=>{if(i<pages.length-1){i++;show()}}
+const prev=()=>{if(i>0){i--;show()}}
+
+/* EDIT */
+const titleEdit=document.getElementById('titleEdit');
+const textEdit=document.getElementById('textEdit');
+const applyEdit=()=>{
+  const p=pages[i]; if(!p) return;
+  if(titleEdit.value) p.querySelector('h2').innerText=titleEdit.value;
+  if(textEdit.value) p.querySelector('p').innerHTML=textEdit.value.replace(/\n/g,'<br>');
+}
+const addPage=()=>{
+  const d=document.createElement('div');
+  d.className='page';
+  d.innerHTML='<h2>New Page ✨</h2><p>Write something special…</p>';
+  document.querySelector('.book').insertBefore(d, document.querySelector('.controls'));
+  pages=[...document.querySelectorAll('.page')]; i=pages.length-1; show();
+}
+const delPage=()=>{
+  if(pages.length<=1) return;
+  pages[i].remove(); pages=[...document.querySelectorAll('.page')];
+  i=Math.max(0,i-1); show();
+}
+
+/* MUSIC SWITCH */
+const musicBox=document.getElementById('musicBox');
+const audio=document.getElementById('audio');
+const setSpotify=()=>{
+  const v=document.getElementById('spotify').value;
+  if(v) musicBox.innerHTML=`<iframe style="border-radius:12px" src="${v}" width="100%" height="80" frameborder="0" allow="autoplay; encrypted-media"></iframe>`;
+}
+const setYT=()=>{
+  const u=document.getElementById('youtube').value;
+  if(!u) return;
+  const id=u.split('v=')[1]?.split('&')[0]||u.split('/').pop();
+  musicBox.innerHTML=`<iframe width="100%" height="90" src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1" allow="autoplay"></iframe>`;
+}
+const setMP3=()=>{
+  const m=document.getElementById('mp3').value;
+  if(m){ audio.src=m; audio.play().catch(()=>{}); musicBox.innerHTML='<small>MP3 Playing…</small>'; }
+}
+document.body.addEventListener('click',()=>audio.play().catch(()=>{}),{once:true});
+
+/* FLOWERS */
+setInterval(()=>{
+  const f=document.createElement('div');
+  f.className='flower'; f.innerText='🌸';
+  f.style.left=Math.random()*100+'vw';
+  f.style.animationDuration=3+Math.random()*3+'s';
+  document.body.appendChild(f); setTimeout(()=>f.remove(),6000);
+},300);
+
+/* FIREWORKS */
+const c=document.getElementById('fx'),x=c.getContext('2d');
+const resize=()=>{c.width=innerWidth;c.height=innerHeight};resize();onresize=resize;
+let P=[];
+setInterval(()=>{for(let k=0;k<70;k++)P.push({x:c.width/2,y:c.height/2,vx:(Math.random()-.5)*6,vy:(Math.random()-.5)*6,l:90})},2000);
+(function a(){
+  x.clearRect(0,0,c.width,c.height);
+  P.forEach((p,n)=>{p.x+=p.vx;p.y+=p.vy;p.l--;
+    x.fillStyle=`hsl(${Math.random()*360},100%,60%)`;x.fillRect(p.x,p.y,3,3);
+    if(p.l<=0)P.splice(n,1)
+  }); requestAnimationFrame(a)
+})();
+</script>
+</body>
+</html>
